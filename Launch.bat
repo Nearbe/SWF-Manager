@@ -1,0 +1,1 @@
+CMD /C (e:\Work\cmdow\bin\Release\cmdow @ /HID)&(python swf_manager.py)
