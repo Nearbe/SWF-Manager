@@ -165,8 +165,8 @@ class SWF_Copy_Manager(QMainWindow):
         self.te = QTextEdit(self)
         self.initUI()
 
-        sys.stdout = Stream(textWritten=self.onUpdateText)
-        sys.stderr = Stream(textWritten=self.onUpdateText)
+        ##sys.stdout = Stream(textWritten=self.onUpdateText)
+        ##sys.stderr = Stream(textWritten=self.onUpdateText)
 
     def __del__(self):
         sys.stdout = sys.__stdout__
