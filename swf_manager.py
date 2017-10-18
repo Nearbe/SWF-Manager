@@ -27,6 +27,7 @@ class SecondThread(Thread):
         Thread.__init__(self, name=name)
 
         self.times = 0
+        self.cycle = 0
 
         db_1 = open(r"Paths.txt", "r")
         db_1_readlines = db_1.readlines()
@@ -36,68 +37,82 @@ class SecondThread(Thread):
 
     def run(self):
 
-        db_1 = open(r"Paths.txt", "r")
-        db_1_readlines = db_1.readlines()
-        dwn_path = db_1_readlines[0]
-        Downloaded_SWF_Path = dwn_path[0:-1]
-        ori_path = db_1_readlines[1]
-        Original_SWF_Path = ori_path[0:-1]
-        bck_path = db_1_readlines[2]
-        Backup_Path = bck_path[0:-1]
-        db_1.close()
+        print("Script start")
 
-        while self.times == 0:
-            print("Start1")
-            try:
-                print("Start2")
-                Files_Search = listdir(Downloaded_SWF_Path)
-                Filter = list(filter(lambda x: x.endswith('.bmp'), Files_Search))
-                Get_File_Name = Filter[0]
-                Files_Search_2 = listdir(Original_SWF_Path)
-                Filter_2 = list(filter(lambda x: x.endswith(Get_File_Name), Files_Search_2))
-                rename(Original_SWF_Path +
-                       str(Symbol_For_Path[0]) +
-                       str(Get_File_Name),
-                       "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}".format(Backup_Path,
-                                                                               str(Symbol_For_Path[0]),
-                                                                               str(Get_File_Name.replace(".bmp",
-                                                                                                         "")),
-                                                                               str("-"), str(cur_year),
-                                                                               str("-"), str(cur_month),
-                                                                               str("-"), str(cur_day),
-                                                                               str("-"), str(cur_hour),
-                                                                               str("-"), str(cur_minute),
-                                                                               str(".bmp")))
-                print(Get_File_Name + str(" was backup"))
-                Go_To_Original = move("{0}{1}{2}".format(Downloaded_SWF_Path,
-                                                         str(Symbol_For_Path[0]),
-                                                         str(Get_File_Name)),
-                                      Original_SWF_Path)
-            except IndexError:
-                print("No match files in " + str(Downloaded_SWF_Path))
-                print("Script waiting " + str(self.seconds) + str(" seconds"))
-                time.sleep(self.seconds)
-                pass
-            except FileNotFoundError:
-                print("No match files in " + str(Original_SWF_Path))
-                print("Script waiting " + str(self.seconds) + str(" seconds"))
-                time.sleep(self.seconds)
-                pass
-            except BaseException as e:
-                print(e)
-                print("Script waiting " + str(self.seconds) + str(" seconds"))
-                time.sleep(self.seconds)
-                pass
+        while self.cycle == 0:
+            while self.times == 0:
 
-    def stop(self):
+                db_1 = open(r"Paths.txt", "r")
+                db_1_readlines = db_1.readlines()
+                dwn_path = db_1_readlines[0]
+                Downloaded_SWF_Path = dwn_path[0:-1]
+                ori_path = db_1_readlines[1]
+                Original_SWF_Path = ori_path[0:-1]
+                bck_path = db_1_readlines[2]
+                Backup_Path = bck_path[0:-1]
+                db_1.close()
+
+                db_2 = open(r"Paths.txt", "r")
+                db_2_readlines = db_2.readlines()
+                self_2_seconds = db_2_readlines[3]
+                self.seconds = int(self_2_seconds[0:-1])
+                db_2.close()
+
+                try:
+                    Files_Search = listdir(Downloaded_SWF_Path)
+                    Filter = list(filter(lambda x: x.endswith('.swf'), Files_Search))
+                    Get_File_Name = Filter[0]
+                    Files_Search_2 = listdir(Original_SWF_Path)
+                    Filter_2 = list(filter(lambda x: x.endswith(Get_File_Name), Files_Search_2))
+                    rename(Original_SWF_Path +
+                           str(Symbol_For_Path[0]) +
+                           str(Get_File_Name),
+                           "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}".format(Backup_Path,
+                                                                                   str(Symbol_For_Path[0]),
+                                                                                   str(Get_File_Name.replace(".swf",
+                                                                                                             "")),
+                                                                                   str("-"), str(cur_year),
+                                                                                   str("-"), str(cur_month),
+                                                                                   str("-"), str(cur_day),
+                                                                                   str("-"), str(cur_hour),
+                                                                                   str("-"), str(cur_minute),
+                                                                                   str(".swf")))
+                    print(Get_File_Name + str(" was backup"))
+                    Go_To_Original = move("{0}{1}{2}".format(Downloaded_SWF_Path,
+                                                             str(Symbol_For_Path[0]),
+                                                             str(Get_File_Name)),
+                                          Original_SWF_Path)
+                except IndexError:
+                    print("No match files in " + str(Downloaded_SWF_Path))
+                    print("Script waiting " + str(self.seconds) + str(" seconds"))
+                    time.sleep(self.seconds)
+                    continue
+                except FileNotFoundError:
+                    print("No match files in " +
+                          str(Original_SWF_Path +
+                              "\nor\n" +
+                              "Folder does not exist: " +
+                              str(Downloaded_SWF_Path)))
+                    print("Script waiting " + str(self.seconds) + str(" seconds"))
+                    time.sleep(self.seconds)
+                    continue
+                except BaseException as e:
+                    print(e)
+                    print("Script waiting " + str(self.seconds) + str(" seconds"))
+                    time.sleep(self.seconds)
+                    continue
+
+    def stops_to_work(self):
         self.times = 1
-        if self.times == 1:
-            print(str(self.times))
+        print("Script stop")
 
     def start_again(self):
         self.times = 0
-        if self.times == 0:
-            print(str(self.times))
+        print("Script start")
+
+    def stop_self_cycle(self):
+        self.cycle = 1
+        self.times = 1
 
 
 class Stream(QObject):
@@ -165,12 +180,8 @@ class SWF_Copy_Manager(QMainWindow):
         self.te = QTextEdit(self)
         self.initUI()
 
-        ##sys.stdout = Stream(textWritten=self.onUpdateText)
-        ##sys.stderr = Stream(textWritten=self.onUpdateText)
-
-    def __del__(self):
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
+        sys.stdout = Stream(textWritten=self.onUpdateText)
+        sys.stderr = Stream(textWritten=self.onUpdateText)
 
     def onUpdateText(self, text):
         cursor = self.te.textCursor()
@@ -178,6 +189,10 @@ class SWF_Copy_Manager(QMainWindow):
         cursor.insertText(text)
         self.te.setTextCursor(cursor)
         self.te.ensureCursorVisible()
+
+        write_logs = open(r"Logs.txt", "a+")
+        write_logs.write(text)
+        write_logs.close()
 
     def initUI(self):
 
@@ -232,19 +247,13 @@ class SWF_Copy_Manager(QMainWindow):
         show_action = QAction("Show", self)
         hide_action = QAction("Hide", self)
         quit_action = QAction("Exit", self)
-        ##start_script = QAction("Start Script", self)
-        ##pause_script = QAction("Start Script", self)
-        ##stop_script = QAction("Stop Script", self)
+
         ##Создаем менюшку
         tray_menu = QMenu()
-        ##tray_menu.addAction(start_script)
-        ##tray_menu.addAction(pause_script)
-        ##tray_menu.addAction(stop_script)
         tray_menu.addAction(show_action)
         tray_menu.addAction(quit_action)
 
         ##Добавляем в трей менюшку и меняем иконку
-        ##self.tray_icon.activated.connect(self.tray_icon_hide_show)
         self.tray_icon.activated.connect(self.tray_icon_activated)
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.setIcon(QIcon('75.png'))
@@ -255,6 +264,7 @@ class SWF_Copy_Manager(QMainWindow):
         self.le2.setToolTip('Folder with Original *.swf files')
         self.le3.setToolTip('Folder with backups *.swf files')
         self.le4.setToolTip('This is the delay of the script')
+        self.te.setToolTip('This is "Log Space"')
 
         ##Создаем кнопочки
         dw_btn = QPushButton('Download Folder', self)
@@ -268,10 +278,7 @@ class SWF_Copy_Manager(QMainWindow):
         ##Присваиваем кнопочкам действия и другие атрибуты
         dw_btn.setToolTip("Set folder with downloads *.swf files")
         dw_btn.move(5, 10)
-        ##dw_btn.setStyleSheet("background-color:#FAF0E6;")
         dw_btn.setFixedSize(100, 30)
-        ##dw_btn.setIcon(QIcon('folder_blue_favorites.png'))
-        ##dw_btn.setIconSize(QSize(38, 38))
         dw_btn.clicked.connect(self.showDialog)
 
         or_btn.setToolTip("Set folder with Original *.swf files")
@@ -296,6 +303,7 @@ class SWF_Copy_Manager(QMainWindow):
         ps_btn.clicked.connect(ht.start_again)
         ps_btn.clicked.connect(stp_btn.enabled)
         ps_btn.clicked.connect(ps_btn.disabled)
+        ps_btn.clicked.connect(self.status_bar_lch)
 
         lch_btn.setToolTip("This button will start script to work")
         lch_btn.move(20, 180)
@@ -303,13 +311,15 @@ class SWF_Copy_Manager(QMainWindow):
         lch_btn.clicked.connect(lch_btn.hide_self)
         lch_btn.clicked.connect(ps_btn.show_self)
         lch_btn.clicked.connect(stp_btn.enabled)
+        lch_btn.clicked.connect(self.status_bar_lch)
 
         stp_btn.setToolTip('This button will stop script to work')
         stp_btn.move(150, 180)
         stp_btn.setDisabled(True)
-        stp_btn.clicked.connect(ht.stop)
+        stp_btn.clicked.connect(ht.stops_to_work)
         stp_btn.clicked.connect(ps_btn.enabled)
         stp_btn.clicked.connect(stp_btn.disabled)
+        stp_btn.clicked.connect(self.status_bar_stp)
 
         ##Задаем экшен для кнопок в трей менюшке
         show_action.triggered.connect(self.show)
@@ -319,6 +329,8 @@ class SWF_Copy_Manager(QMainWindow):
         hide_action.triggered.connect(self.hide)
 
         quit_action.triggered.connect(qApp.quit)
+        quit_action.triggered.connect(ht.stop_self_cycle)
+        quit_action.triggered.connect(self.tray_exit_hide)
 
     def showDialog(self):
         self.statusBar().showMessage('Input path')
@@ -392,6 +404,12 @@ class SWF_Copy_Manager(QMainWindow):
             db_1.writelines(db_1_readlines)
             db_1.close()
 
+    def status_bar_lch(self):
+        self.statusBar().showMessage('I am Fighting...')
+
+    def status_bar_stp(self):
+        self.statusBar().showMessage('I am stopped...')
+
     def closeEvent(self, event):
 
         reply = QMessageBox.question(self,
@@ -400,7 +418,7 @@ class SWF_Copy_Manager(QMainWindow):
                                      QMessageBox.Yes | QMessageBox.No,
                                      QMessageBox.No)
         if reply == QMessageBox.Yes:
-            ht.stop()
+            ht.stop_self_cycle()
             event.accept()
         else:
             event.ignore()
@@ -410,6 +428,9 @@ class SWF_Copy_Manager(QMainWindow):
                 self.tray_icon.show()
             else:
                 self.tray_icon.hide()
+
+    def tray_exit_hide(self):
+        self.tray_icon.hide()
 
     def changeEvent(self, event):
         if event.type() == QEvent.WindowStateChange:
